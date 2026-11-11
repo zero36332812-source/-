@@ -1,0 +1,32 @@
+{
+  "name": "maeumgyeol-sentiment",
+  "private": true,
+  "version": "1.0.0",
+  "description": "마음결 - 문장의 분위기를 읽어주는 AI 감성 분석 서비스",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "node --env-file=.env.local dev-server.js",
+    "start": "node --env-file=.env.local dev-server.js",
+    "test": "node --test tests/unit/*.test.js",
+    "test:e2e": "playwright test"
+  },
+  "keywords": [
+    "sentiment-analysis",
+    "openai",
+    "supabase",
+    "korean-nlp"
+  ],
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@supabase/supabase-js": "2.98.0",
+    "openai": "6.32.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "vercel": "65.14.0"
+  }
+}

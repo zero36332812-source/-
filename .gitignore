@@ -1,0 +1,19 @@
+# 의존성 패키지
+node_modules/
+
+# 환경변수 및 비밀키 파일 (보안을 위해 절대 커밋 금지)
+.env
+.env.local
+.env.*.local
+
+# Vercel 배포 캐시 및 빌드 결과물
+.vercel/
+
+# 테스트 산출물 및 리포트
+test-results/
+playwright-report/
+
+# OS 자동 생성 파일
+.DS_Store
+Thumbs.db
+

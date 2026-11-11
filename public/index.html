@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>마음결 | 텍스트 감성 분석</title>
+  <!-- CSS 스타일시트 연결 -->
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="page-container">
+    <!-- 헤더 영역: 서비스명 및 메인 타이틀 안내 -->
+    <header class="header">
+      <div class="brand-bar">
+        <span class="brand-name">마음결</span>
+        <span class="brand-tagline">텍스트 감성 분석</span>
+      </div>
+      <h1 class="main-title">문장의 분위기를 읽어요</h1>
+      <p class="main-subtitle">짧은 글을 남기면 긍정·부정·중립으로 살펴드려요.</p>
+    </header>
+
+    <!-- 메인 본문 콘텐츠: 입력 카드와 결과 카드 -->
+    <main class="content-grid">
+      <!-- 1. 왼쪽 입력 카드 섹션 -->
+      <section class="card input-card" aria-labelledby="input-card-title">
+        <form id="sentiment-form" novalidate>
+          <div class="input-header">
+            <label id="input-card-title" for="sentence-input" class="card-title">분석할 문장</label>
+            <span id="char-count" class="char-count" aria-live="polite">0 / 2,000자</span>
+          </div>
+
+          <!-- 텍스트 입력 영역 -->
+          <div class="textarea-wrapper">
+            <textarea
+              id="sentence-input"
+              name="sentence"
+              class="sentence-textarea"
+              placeholder="예: 오늘 친구와 오랜만에 만나서 정말 즐거웠어요."
+              rows="6"
+              aria-describedby="input-help char-count input-error"
+            ></textarea>
+          </div>
+
+          <!-- 입력 도움말 및 유효성 검사 오류 메시지 -->
+          <div class="input-info-row">
+            <p id="input-help" class="help-text">앞뒤 공백을 제외하고 1~2,000자까지 입력할 수 있어요.</p>
+            <p id="input-error" class="error-text" role="alert" aria-live="polite" hidden></p>
+          </div>
+
+          <!-- 예시 문장 선택 버튼들 -->
+          <div class="example-buttons-section" aria-label="예시 문장 선택">
+            <span class="example-label">예시:</span>
+            <div class="example-buttons-group">
+              <button type="button" class="btn btn-example" data-example="happy">기쁜 문장</button>
+              <button type="button" class="btn btn-example" data-example="sad">아쉬운 문장</button>
+              <button type="button" class="btn btn-example" data-example="neutral">담담한 문장</button>
+            </div>
+          </div>
+
+          <!-- 상시 데이터 처리 및 보안 안내 -->
+          <div class="privacy-notice-box">
+            <p class="privacy-notice-text">
+              입력한 문장은 분석을 위해 OpenAI로 전송돼요. 우리 서비스 DB에는 원문과 분석 이유를 저장하지 않아요. 이름·연락처 등 개인정보는 입력하지 마세요.
+            </p>
+            <details class="privacy-details">
+              <summary>데이터 처리 안내</summary>
+              <div class="privacy-details-content">
+                <p>이 서비스의 DB에는 입력 원문과 분석 이유를 저장하지 않아요. 감성 결과, 신뢰도, 글자 수, 처리 시간 등의 운영 정보만 기록해요. 현재 입력과 결과는 새로고침하면 사라져요. 외부 AI 제공자의 데이터 처리 정책은 별도로 적용돼요.</p>
+                <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener noreferrer" class="external-link">
+                  OpenAI 데이터 관리 정책 확인하기 &rarr;
+                </a>
+              </div>
+            </details>
+          </div>
+
+          <!-- 폼 조작 버튼 그룹 -->
+          <div class="action-buttons-group">
+            <button type="submit" id="submit-btn" class="btn btn-primary">
+              <span class="btn-text">감성 분석하기</span>
+            </button>
+            <button type="button" id="reset-btn" class="btn btn-secondary">
+              지우기
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 2. 오른쪽 결과 카드 섹션 -->
+      <section id="result-card" class="card result-card state-idle" aria-live="polite" aria-busy="false">
+        <!-- 자체 제작 CSS 곰 캐릭터 (장식용이므로 aria-hidden) -->
+        <div class="bear-character-container" aria-hidden="true">
+          <div class="bear-character">
+            <div class="bear-ear ear-left"><div class="ear-inner"></div></div>
+            <div class="bear-ear ear-right"><div class="ear-inner"></div></div>
+            <div class="bear-head">
+              <div class="bear-eye eye-left"><div class="pupil"></div></div>
+              <div class="bear-eye eye-right"><div class="pupil"></div></div>
+              <div class="bear-muzzle">
+                <div class="bear-nose"></div>
+                <div class="bear-mouth" id="bear-mouth"></div>
+              </div>
+              <div class="bear-blush blush-left"></div>
+              <div class="bear-blush blush-right"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 결과 패널 콘텐츠 영역 (상태에 따라 동적 전환) -->
+        <div id="result-content" class="result-content">
+          <!-- 1) 대기 상태 (idle / editing) -->
+          <div id="panel-idle" class="result-panel panel-idle">
+            <h2 class="result-title">어떤 분위기가 담겨 있을까요?</h2>
+            <p class="result-desc">문장을 입력하고 감성 분석하기를 눌러보세요.</p>
+          </div>
+
+          <!-- 2) 분석 중 상태 (loading) -->
+          <div id="panel-loading" class="result-panel panel-loading" hidden>
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <h2 class="result-title" role="status">문장의 분위기를 살펴보고 있어요…</h2>
+          </div>
+
+          <!-- 3) 분석 성공 상태 (success) -->
+          <div id="panel-success" class="result-panel panel-success" hidden>
+            <div class="sentiment-badge-wrap">
+              <span class="result-section-label">분석 결과</span>
+              <h2 id="sentiment-label" class="sentiment-label" tabindex="-1">긍정</h2>
+            </div>
+
+            <div class="confidence-section">
+              <div class="confidence-header">
+                <span class="confidence-title">신뢰도</span>
+                <span id="confidence-value" class="confidence-value">0%</span>
+              </div>
+              <div class="confidence-bar-track" aria-hidden="true">
+                <div id="confidence-bar-fill" class="confidence-bar-fill" style="width: 0%;"></div>
+              </div>
+              <p class="confidence-caption">
+                AI가 스스로 추정한 확신 정도예요. 정답 확률이나 검증된 정확도가 아니에요.
+              </p>
+            </div>
+
+            <div class="reason-section">
+              <span class="reason-title">분석 이유</span>
+              <p id="sentiment-reason" class="reason-text"></p>
+            </div>
+
+            <!-- 운영 기록(DB) 저장 실패 시에만 표시되는 보조 안내 -->
+            <div id="storage-warning" class="storage-warning" role="status" hidden>
+              분석은 완료했지만 운영 기록을 저장하지 못했어요.
+            </div>
+          </div>
+
+          <!-- 4) 오류 상태 (error) -->
+          <div id="panel-error" class="result-panel panel-error" hidden>
+            <div class="error-icon" aria-hidden="true">!</div>
+            <h2 id="error-title" class="result-title" role="alert">분석 중 문제가 생겼어요</h2>
+            <p id="error-message" class="error-desc"></p>
+            <button type="button" id="retry-btn" class="btn btn-secondary btn-retry" hidden>
+              다시 시도
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 푸터 영역: 서비스 성격 및 한계 안내 -->
+    <footer class="footer">
+      <p class="disclaimer-text">문장의 표현을 분류하는 참고 정보이며 심리 진단이 아니에요.</p>
+    </footer>
+  </div>
+
+  <!-- 프론트엔드 모듈형 스크립트 실행 -->
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
+
